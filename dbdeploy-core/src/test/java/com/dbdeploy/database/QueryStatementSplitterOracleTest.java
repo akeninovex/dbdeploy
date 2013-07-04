@@ -28,15 +28,15 @@ public class QueryStatementSplitterOracleTest {
 
 	@Test
 	public void oracleLeaveDots() throws Exception {
-		List<String> result = oraSplitter.split("CREATE SEQUENCE cdb_meta.seq_global\n;");
-		assertThat(result, hasItem("CREATE SEQUENCE cdb_meta.seq_global"));
+		List<String> result = oraSplitter.split("create sequence x.y\n;");
+		assertThat(result, hasItem("create sequence x.y"));
 		assertThat(result.size(), is(1));
 	}
 
 	@Test
 	public void oracleIgnoreComments() throws Exception {
-		List<String> result = oraSplitter.split("-- here is my comment \n CREATE SEQUENCE cdb_meta.seq_global\n;");
-		assertThat(result, hasItem("CREATE SEQUENCE cdb_meta.seq_global"));
+		List<String> result = oraSplitter.split("-- here is my comment \n create sequence x.y\n;");
+		assertThat(result, hasItem("create sequence x.y"));
 		assertThat(result.size(), is(1));
 	}
 
@@ -50,12 +50,10 @@ public class QueryStatementSplitterOracleTest {
 
 	@Test
 	public void oracleTrigger() throws Exception {
-		List<String> result = oraSplitter
-				.split("CREATE TRIGGER cdb_imp.tr_bi_imp_booking\n BEFORE INSERT ON cdb_imp.imp_booking \nFOR EACH ROW "
-						+ "\nBEGIN\n:new.id := cdb_meta.seq_global.nextval;\nEND;");
-		assertThat(result,
-				hasItem("CREATE TRIGGER cdb_imp.tr_bi_imp_booking BEFORE INSERT ON cdb_imp.imp_booking FOR EACH ROW "
-						+ "BEGIN :new.id := cdb_meta.seq_global.nextval; END"));
+		List<String> result = oraSplitter.split("create trigger x.y\n BEFORE INSERT ON x.y \nFOR EACH ROW "
+				+ "\nBEGIN\n:new.id := x.y.z;\nEND;");
+		assertThat(result, hasItem("create trigger x.y BEFORE INSERT ON x.y FOR EACH ROW "
+				+ "BEGIN :new.id := x.y.z; END"));
 
 		assertThat(result.size(), is(1));
 	}
@@ -91,7 +89,7 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleFunctionWithTypes() throws Exception {
 		List<String> result = oraSplitter
-				.split("create or replace type cdb_report.length_metric as object (col varchar2(200));"
+				.split("create or replace type x.y as object (col varchar2(200));"
 						+ "create or replace type x as table of y;/"
 						+ "create or replace function x(a in varchar2, b in varchar2) return y as l_a := varchar2(10);l_b := varchar2(10);"
 						+ "begin select 1 from dual; select 2 from dual;end;/");
@@ -100,7 +98,7 @@ public class QueryStatementSplitterOracleTest {
 				hasItem("create or replace function x(a in varchar2, b in varchar2) return y as l_a := varchar2(10); l_b := varchar2(10); "
 						+ "begin select 1 from dual; select 2 from dual; end"));
 		assertThat(result, hasItem("create or replace type x as table of y"));
-		assertThat(result, hasItem("create or replace type cdb_report.length_metric as object (col varchar2(200))"));
+		assertThat(result, hasItem("create or replace type x.y as object (col varchar2(200))"));
 
 		assertThat(result.size(), is(3));
 	}
@@ -108,16 +106,16 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleFunctionComplexWithTypes() throws Exception {
 		List<String> result = oraSplitter
-				.split("create or replace type cdb_report.length_metric as object (col varchar2(200));"
+				.split("create or replace type y.x as object (col varchar2(200));"
 						+ "create or replace type x as table of y;/"
-						+ "create or replace function get_column_metrics(p_user in varchar2, p_table in varchar2) return length_metric_table as "
+						+ "create or replace function x(p_user in varchar2, p_table in varchar2) return y as "
 						+ "l_data length_metric_table := length_metric_table();type col_tbl is table of all_tab_columns.column_name%type; l_col_names col_tbl;"
 						+ "begin select 1 from dual; select 2 from dual;end;/");
 		assertThat(result, hasItem("create or replace type x as table of y"));
-		assertThat(result, hasItem("create or replace type cdb_report.length_metric as object (col varchar2(200))"));
+		assertThat(result, hasItem("create or replace type y.x as object (col varchar2(200))"));
 		assertThat(
 				result,
-				hasItem("create or replace function get_column_metrics(p_user in varchar2, p_table in varchar2) return length_metric_table as "
+				hasItem("create or replace function x(p_user in varchar2, p_table in varchar2) return y as "
 						+ "l_data length_metric_table := length_metric_table(); type col_tbl is table of all_tab_columns.column_name%type; "
 						+ "l_col_names col_tbl; begin select 1 from dual; select 2 from dual; end"));
 
@@ -127,12 +125,12 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleIndexes() throws Exception {
 		List<String> result = oraSplitter
-				.split("CREATE table blahblah (v_long varchar2(4000));\nALTER TABLE cdb_dwh.f_revenue ADD CONSTRAINT pk_f_revenue PRIMARY KEY\n(\nid\n)USING INDEX;CREATE UNIQUE INDEX cdb_dwh.ix_f_revenue_awb on cdb_dwh.f_revenue(awb);");
+				.split("CREATE table blahblah (v_long varchar2(4000));\nALTER TABLE x.y ADD CONSTRAINT z PRIMARY KEY\n(\nid\n)USING INDEX;"
+						+ "CREATE UNIQUE INDEX x.y on x.y(c);");
 
 		assertThat(result, hasItem("CREATE table blahblah (v_long varchar2(4000))"));
-		assertThat(result,
-				hasItem("ALTER TABLE cdb_dwh.f_revenue ADD CONSTRAINT pk_f_revenue PRIMARY KEY ( id )USING INDEX"));
-		assertThat(result, hasItem("CREATE UNIQUE INDEX cdb_dwh.ix_f_revenue_awb on cdb_dwh.f_revenue(awb)"));
+		assertThat(result, hasItem("ALTER TABLE x.y ADD CONSTRAINT z PRIMARY KEY ( id )USING INDEX"));
+		assertThat(result, hasItem("CREATE UNIQUE INDEX x.y on x.y(c)"));
 
 		assertThat(result.size(), is(3));
 	}
@@ -140,12 +138,12 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleIndexesReverse() throws Exception {
 		List<String> result = oraSplitter
-				.split("CREATE table blahblah (v_long varchar2(4000));CREATE UNIQUE INDEX cdb_dwh.ix_f_revenue_awb on cdb_dwh.f_revenue(awb);\nALTER TABLE cdb_dwh.f_revenue ADD CONSTRAINT pk_f_revenue PRIMARY KEY\n(\nid\n)USING INDEX;");
+				.split("CREATE table blahblah (v_long varchar2(4000));CREATE UNIQUE INDEX x.y on x.y(z);\n"
+						+ "ALTER TABLE x.y ADD CONSTRAINT z PRIMARY KEY\n(\nid\n)USING INDEX;");
 
 		assertThat(result, hasItem("CREATE table blahblah (v_long varchar2(4000))"));
-		assertThat(result,
-				hasItem("ALTER TABLE cdb_dwh.f_revenue ADD CONSTRAINT pk_f_revenue PRIMARY KEY ( id )USING INDEX"));
-		assertThat(result, hasItem("CREATE UNIQUE INDEX cdb_dwh.ix_f_revenue_awb on cdb_dwh.f_revenue(awb)"));
+		assertThat(result, hasItem("ALTER TABLE x.y ADD CONSTRAINT z PRIMARY KEY ( id )USING INDEX"));
+		assertThat(result, hasItem("CREATE UNIQUE INDEX x.y on x.y(z)"));
 
 		assertThat(result.size(), is(3));
 	}
