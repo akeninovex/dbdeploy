@@ -1,19 +1,21 @@
 package com.dbdeploy;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+
 import com.dbdeploy.appliers.DirectToDbApplier;
 import com.dbdeploy.appliers.TemplateBasedApplier;
 import com.dbdeploy.appliers.UndoTemplateBasedApplier;
 import com.dbdeploy.database.DelimiterType;
 import com.dbdeploy.database.LineEnding;
 import com.dbdeploy.database.QueryStatementSplitter;
+import com.dbdeploy.database.QueryStatementSplitterOracle;
 import com.dbdeploy.database.changelog.DatabaseSchemaVersionManager;
 import com.dbdeploy.database.changelog.QueryExecuter;
 import com.dbdeploy.exceptions.UsageException;
 import com.dbdeploy.scripts.ChangeScriptRepository;
 import com.dbdeploy.scripts.DirectoryScanner;
-
-import java.io.File;
-import java.io.PrintWriter;
 
 public class DbDeploy {
 	private String url;
@@ -89,20 +91,26 @@ public class DbDeploy {
 
 		QueryExecuter queryExecuter = new QueryExecuter(url, userid, password);
 
-		DatabaseSchemaVersionManager databaseSchemaVersionManager =
-				new DatabaseSchemaVersionManager(queryExecuter, changeLogTableName);
+		DatabaseSchemaVersionManager databaseSchemaVersionManager = new DatabaseSchemaVersionManager(queryExecuter,
+				changeLogTableName);
 
-		ChangeScriptRepository changeScriptRepository =
-				new ChangeScriptRepository(new DirectoryScanner(encoding).getChangeScriptsForDirectory(scriptdirectory));
+		ChangeScriptRepository changeScriptRepository = new ChangeScriptRepository(
+				new DirectoryScanner(encoding).getChangeScriptsForDirectory(scriptdirectory));
 
 		ChangeScriptApplier doScriptApplier;
 
 		if (outputfile != null) {
-			doScriptApplier = new TemplateBasedApplier(
-					new PrintWriter(outputfile, encoding), dbms,
-					changeLogTableName, delimiter, delimiterType, getTemplatedir());
+			doScriptApplier = new TemplateBasedApplier(new PrintWriter(outputfile, encoding), dbms, changeLogTableName,
+					delimiter, delimiterType, getTemplatedir());
 		} else {
-			QueryStatementSplitter splitter = new QueryStatementSplitter();
+			/*
+			 * parsing delimiter is only implemented for oracle
+			 */
+			QueryStatementSplitter splitter = delimiterType == DelimiterType.oracle_parsed ? new QueryStatementSplitterOracle()
+					: new QueryStatementSplitter();
+			System.err.println(MessageFormat.format("Splitter [{0}] implemented for delimiter-type [{1}]", splitter
+					.getClass().getName(), delimiterType));
+
 			splitter.setDelimiter(getDelimiter());
 			splitter.setDelimiterType(getDelimiterType());
 			splitter.setOutputLineEnding(lineEnding);
@@ -112,12 +120,13 @@ public class DbDeploy {
 		ChangeScriptApplier undoScriptApplier = null;
 
 		if (undoOutputfile != null) {
-			undoScriptApplier = new UndoTemplateBasedApplier(
-				new PrintWriter(undoOutputfile), dbms, changeLogTableName, delimiter, delimiterType, templatedir);
+			undoScriptApplier = new UndoTemplateBasedApplier(new PrintWriter(undoOutputfile), dbms, changeLogTableName,
+					delimiter, delimiterType, templatedir);
 
 		}
 
-		Controller controller = new Controller(changeScriptRepository, databaseSchemaVersionManager, doScriptApplier, undoScriptApplier);
+		Controller controller = new Controller(changeScriptRepository, databaseSchemaVersionManager, doScriptApplier,
+				undoScriptApplier);
 
 		controller.processChangeScripts(lastChangeToApply);
 
@@ -207,14 +216,13 @@ public class DbDeploy {
 		return delimiterType;
 	}
 
-
 	public void setDelimiterType(DelimiterType delimiterType) {
 		this.delimiterType = delimiterType;
 	}
 
 	public String getWelcomeString() {
-        String version = getClass().getPackage().getImplementationVersion();
-        return "dbdeploy " + version;
+		String version = getClass().getPackage().getImplementationVersion();
+		return "dbdeploy " + version;
 	}
 
 	public String getEncoding() {

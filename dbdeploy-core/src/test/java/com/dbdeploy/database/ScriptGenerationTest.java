@@ -8,6 +8,7 @@ import com.dbdeploy.exceptions.SchemaVersionTrackingException;
 import com.dbdeploy.scripts.ChangeScript;
 import com.dbdeploy.scripts.ChangeScriptRepository;
 import com.dbdeploy.scripts.StubChangeScript;
+
 import org.junit.Test;
 
 import java.io.*;
@@ -49,7 +50,8 @@ public class ScriptGenerationTest {
 
 		controller.processChangeScripts(Long.MAX_VALUE);
 
-		assertEquals(readExpectedFileContents(getExpectedFilename(syntaxName)), writer.toString());
+		String expectedOutput = readExpectedFileContents(getExpectedFilename(syntaxName));
+		assertEquals(expectedOutput.replaceAll("\r", ""), writer.toString().replaceAll("\r", ""));
 	}
 
 	private String getExpectedFilename(String dbSyntaxName) {
