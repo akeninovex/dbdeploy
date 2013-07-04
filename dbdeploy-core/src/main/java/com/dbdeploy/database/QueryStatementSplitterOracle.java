@@ -11,7 +11,8 @@ import org.apache.commons.lang.text.StrTokenizer;
 /**
  * Adapted class that a) removes the "/" buffer executor (not needed when commands are executed via JDBC) and b) ignores
  * delimiters that occur within pl/sql blocks (i.e. within a BEGIN...END block) or elsewhere that do not constitute
- * termination of a statement
+ * termination of a statement. The aim is thus to provide a deploy tool that can execute scripts that are written
+ * initially for use with SQL*Plus or SQL Developer.
  * 
  * @author akenworthy
  */
@@ -91,7 +92,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 						/*
 						 * if we have reached the final "END;" token, then the statement should be complete...
 						 */
-						ss[i] = s + CMD_BREAK_PLACEHOLDER;
+						ss[i] = s + DELIMITER_PLACEHOLDER + CMD_BREAK_PLACEHOLDER;
 						isSimpleSqlBlock = false;
 						definitionStarted = false;
 					}

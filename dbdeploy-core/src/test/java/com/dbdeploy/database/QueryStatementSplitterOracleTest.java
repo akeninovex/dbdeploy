@@ -22,7 +22,7 @@ public class QueryStatementSplitterOracleTest {
 		List<String> result = oraSplitter
 				.split(" select 0 from dual; begin \n select 1 from dual; \n begin select 2 from dual; end \n ; end;");
 		assertThat(result, hasItem("select 0 from dual"));
-		assertThat(result, hasItem("begin select 1 from dual; begin select 2 from dual; end; end"));
+		assertThat(result, hasItem("begin select 1 from dual; begin select 2 from dual; end; end;"));
 		assertThat(result.size(), is(2));
 	}
 
@@ -53,7 +53,7 @@ public class QueryStatementSplitterOracleTest {
 		List<String> result = oraSplitter.split("create trigger x.y\n BEFORE INSERT ON x.y \nFOR EACH ROW "
 				+ "\nBEGIN\n:new.id := x.y.z;\nEND;");
 		assertThat(result, hasItem("create trigger x.y BEFORE INSERT ON x.y FOR EACH ROW "
-				+ "BEGIN :new.id := x.y.z; END"));
+				+ "BEGIN :new.id := x.y.z; END;"));
 
 		assertThat(result.size(), is(1));
 	}
@@ -70,7 +70,7 @@ public class QueryStatementSplitterOracleTest {
 	public void oracleFunction() throws Exception {
 		List<String> result = oraSplitter
 				.split("CREATE FUNCTION as v_long varchar2(4000); BEGIN\nselect 1 from dual;\nEND;");
-		assertThat(result, hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; END"));
+		assertThat(result, hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; END;"));
 
 		assertThat(result.size(), is(1));
 	}
@@ -81,7 +81,7 @@ public class QueryStatementSplitterOracleTest {
 				.split("CREATE FUNCTION as v_long varchar2(4000);BEGIN select 1 from dual;BEGIN select 2 from dual;END;END;");
 		assertThat(
 				result,
-				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END"));
+				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END;"));
 
 		assertThat(result.size(), is(1));
 	}
@@ -96,7 +96,7 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(
 				result,
 				hasItem("create or replace function x(a in varchar2, b in varchar2) return y as l_a := varchar2(10); l_b := varchar2(10); "
-						+ "begin select 1 from dual; select 2 from dual; end"));
+						+ "begin select 1 from dual; select 2 from dual; end;"));
 		assertThat(result, hasItem("create or replace type x as table of y"));
 		assertThat(result, hasItem("create or replace type x.y as object (col varchar2(200))"));
 
@@ -117,7 +117,7 @@ public class QueryStatementSplitterOracleTest {
 				result,
 				hasItem("create or replace function x(p_user in varchar2, p_table in varchar2) return y as "
 						+ "l_data length_metric_table := length_metric_table(); type col_tbl is table of all_tab_columns.column_name%type; "
-						+ "l_col_names col_tbl; begin select 1 from dual; select 2 from dual; end"));
+						+ "l_col_names col_tbl; begin select 1 from dual; select 2 from dual; end;"));
 
 		assertThat(result.size(), is(3));
 	}
@@ -167,7 +167,7 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(result, hasItem("CREATE view blahblah1 as select 1 from dual"));
 		assertThat(
 				result,
-				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END"));
+				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END;"));
 
 		assertThat(result.size(), is(2));
 	}
@@ -180,7 +180,7 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(result, hasItem("CREATE view blahblah1 as select 1 from dual"));
 		assertThat(
 				result,
-				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END"));
+				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END;"));
 
 		assertThat(result.size(), is(2));
 	}
