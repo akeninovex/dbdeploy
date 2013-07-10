@@ -102,6 +102,24 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(3));
 	}
+	@Test
+	public void oracleFunctionWithTypesAndGrants() throws Exception {
+		List<String> result = oraSplitter
+				.split("create or replace type x.y as object (col varchar2(200));"
+						+ "create or replace type x as table of y;/"
+						+ "create or replace function x(a in varchar2, b in varchar2) return y as l_a := varchar2(10);l_b := varchar2(10);"
+						+ "begin select 1 from dual; select 2 from dual;end;/grant all on x to y;grant all on y to x;");
+		assertThat(
+				result,
+				hasItem("create or replace function x(a in varchar2, b in varchar2) return y as l_a := varchar2(10); l_b := varchar2(10); "
+						+ "begin select 1 from dual; select 2 from dual; end;"));
+		assertThat(result, hasItem("create or replace type x as table of y"));
+		assertThat(result, hasItem("create or replace type x.y as object (col varchar2(200))"));
+		assertThat(result, hasItem("grant all on x to y"));
+		assertThat(result, hasItem("grant all on y to x"));
+
+		assertThat(result.size(), is(5));
+	}
 
 	@Test
 	public void oracleFunctionComplexWithTypes() throws Exception {
@@ -203,6 +221,16 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result, hasItem("create view blahblah1 as select 1 from dual"));
 		assertThat(result, hasItem("create table x as with basedata as (select 1 from dual) select * from basedata"));
+
+		assertThat(result.size(), is(2));
+	}
+	
+	@Test
+	public void oracleGrant() throws Exception {
+		List<String> result = oraSplitter.split("grant all on x to y;grant all on y to x;");
+
+		assertThat(result, hasItem("grant all on x to y"));
+		assertThat(result, hasItem("grant all on y to x"));
 
 		assertThat(result.size(), is(2));
 	}

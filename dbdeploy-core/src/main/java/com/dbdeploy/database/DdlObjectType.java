@@ -2,24 +2,32 @@ package com.dbdeploy.database;
 
 import java.util.EnumSet;
 
+/**
+ * Enumeration listing used/relevant DDL elements together with a property {@link #encapsulatesPlSqlBlock(String)}
+ * indicating if the DDL statement uses PL/SQL block syntax (i.e. code blocks ending with "END;" instead of a simple
+ * ";". The default object ({@link #OTHER}) assumes PL/SLQ block usage.
+ * 
+ * @author akenworthy
+ * 
+ */
 public enum DdlObjectType {
-	TABLE("TABLE", false), VIEW("VIEW", false), TRIGGER("TRIGGER", false), INDEX("INDEX", false), SEQUENCE("SEQUENCE",
-			false), TYPE("TYPE", false), FUNCTION("FUNCTION", true), OTHER("OTHER", true);
+	TABLE("TABLE", false), VIEW("VIEW", false), INDEX("INDEX", false), SEQUENCE("SEQUENCE", false), TYPE("TYPE", false), FUNCTION(
+			"FUNCTION", true), TRIGGER("TRIGGER", true), OTHER("OTHER", true);
 
 	private String objectName;
-	private boolean encapsulatesPlSql;
+	private boolean encapsulatesPlSqlBlock;
 
 	public String getObjectName() {
 		return objectName;
 	}
 
-	public boolean getEncapsulatesPlSql() {
-		return encapsulatesPlSql;
+	public boolean getEncapsulatesPlSqlBlock() {
+		return encapsulatesPlSqlBlock;
 	}
 
 	private DdlObjectType(String objectName, boolean encapsulatesPlSql) {
 		this.objectName = objectName;
-		this.encapsulatesPlSql = encapsulatesPlSql;
+		this.encapsulatesPlSqlBlock = encapsulatesPlSql;
 	}
 
 	public static DdlObjectType getByNameOrOTHER(String objectName) {
@@ -31,12 +39,12 @@ public enum DdlObjectType {
 		return OTHER;
 	}
 
-	public static boolean encapsulatesPlSql(String objectName) {
+	public static boolean encapsulatesPlSqlBlock(String objectName) {
 		for (DdlObjectType e : EnumSet.allOf(DdlObjectType.class)) {
 			if (e.getObjectName().equalsIgnoreCase(objectName)) {
-				return e.getEncapsulatesPlSql();
+				return e.getEncapsulatesPlSqlBlock();
 			}
 		}
-		return OTHER.getEncapsulatesPlSql();
+		return OTHER.getEncapsulatesPlSqlBlock();
 	}
 }

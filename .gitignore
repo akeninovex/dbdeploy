@@ -19,3 +19,6 @@ maven-dbdeploy-plugin/.classpath
 maven-dbdeploy-plugin/.project
 maven-dbdeploy-plugin/.settings/org.eclipse.jdt.core.prefs
 dbdeploy-dist/bin/
+dbdeploy-core/out/
+dbdeploy-core/*.properties
+dbdeploy-core/*dbdeploy-core*.xml

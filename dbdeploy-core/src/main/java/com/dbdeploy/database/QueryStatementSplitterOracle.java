@@ -22,6 +22,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private static final String REM = "REM";
 	private final static String BLOCK_BEGIN = "BEGIN";
 	private final static String CREATE_BEGIN = "CREATE";
+	private final static String GRANT_BEGIN = "GRANT";
 	private final static String DEFINITION_BEGIN = "AS";
 	private final static String BLOCK_END = "END";
 	private final static String BUFFER_EXEC = "/";
@@ -54,7 +55,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 
 	private StringBuilder getStatements(String[] ss) {
 		int openBlocks = 0;
-		int openCreates = 0;
+		int openStatement = 0;
 		boolean definitionStarted = false;
 		boolean isSimpleSqlBlock = false;
 		StringBuilder sb = new StringBuilder();
@@ -65,14 +66,17 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 			String s = ss[i];
 
 			if (CREATE_BEGIN.equalsIgnoreCase(s)) {
-				openCreates++;
+				openStatement++;
+			} else if (GRANT_BEGIN.equalsIgnoreCase(s)) {
+				openStatement++;
+				isSimpleSqlBlock = true;
 			} else if (BLOCK_BEGIN.equalsIgnoreCase(s)) {
 				openBlocks++;
 			} else if (DEFINITION_BEGIN.equalsIgnoreCase(s)) {
 				definitionStarted = true;
 			} else {
-				if (openCreates > 0 && !isSimpleSqlBlock && !definitionStarted) {
-					if (!DdlObjectType.encapsulatesPlSql(s)) {
+				if (openStatement > 0 && !isSimpleSqlBlock && !definitionStarted) {
+					if (!DdlObjectType.encapsulatesPlSqlBlock(s)) {
 						/*
 						 * the DDL will be treated as "simple" if only SQL, without any semicolons, follows the CREATE
 						 * definition N.B. this is done by considering the object type between the CREATE statement and
@@ -95,9 +99,12 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 						ss[i] = s + DELIMITER_PLACEHOLDER + CMD_BREAK_PLACEHOLDER;
 						isSimpleSqlBlock = false;
 						definitionStarted = false;
+						if (openStatement > 0) {
+							openStatement--;
+						}
 					}
 				} else if (s.toUpperCase().endsWith(DELIMITER_PLACEHOLDER)) {
-					if (openBlocks == 0 && (openCreates == 0 || isSimpleSqlBlock)) {
+					if (openBlocks == 0 && (openStatement == 0 || isSimpleSqlBlock)) {
 						/*
 						 * ...otherwise, if we have a "stand-alone" statement then it is terminated by the first ";"
 						 * encountered
@@ -105,8 +112,8 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 						ss[i] = s + CMD_BREAK_PLACEHOLDER;
 						isSimpleSqlBlock = false;
 						definitionStarted = false;
-						if (openCreates > 0) {
-							openCreates--;
+						if (openStatement > 0) {
+							openStatement--;
 						}
 					}
 				}
