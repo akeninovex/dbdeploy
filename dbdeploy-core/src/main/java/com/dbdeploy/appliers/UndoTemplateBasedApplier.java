@@ -4,7 +4,6 @@ import com.dbdeploy.database.DelimiterType;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
 
 public class UndoTemplateBasedApplier extends TemplateBasedApplier {

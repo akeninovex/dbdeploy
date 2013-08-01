@@ -1,8 +1,9 @@
 package com.dbdeploy.scripts;
 
 import com.dbdeploy.exceptions.UnrecognisedFilenameException;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class FilenameParserTest {
 

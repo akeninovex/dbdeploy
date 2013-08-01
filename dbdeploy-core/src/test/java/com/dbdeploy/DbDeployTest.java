@@ -1,12 +1,13 @@
 package com.dbdeploy;
 
 import com.dbdeploy.exceptions.UsageException;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.*;
 
 public class DbDeployTest {
 	private final DbDeploy dbDeploy = new DbDeploy();

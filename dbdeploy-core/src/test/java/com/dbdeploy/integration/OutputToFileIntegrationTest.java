@@ -1,14 +1,15 @@
 package com.dbdeploy.integration;
 
 import com.dbdeploy.DbDeploy;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 import org.junit.Test;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
 
 public class OutputToFileIntegrationTest {
 	@Test

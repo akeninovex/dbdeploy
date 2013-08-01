@@ -1,9 +1,5 @@
 package com.dbdeploy;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.text.MessageFormat;
-
 import com.dbdeploy.appliers.DirectToDbApplier;
 import com.dbdeploy.appliers.TemplateBasedApplier;
 import com.dbdeploy.appliers.UndoTemplateBasedApplier;
@@ -16,6 +12,10 @@ import com.dbdeploy.database.changelog.QueryExecuter;
 import com.dbdeploy.exceptions.UsageException;
 import com.dbdeploy.scripts.ChangeScriptRepository;
 import com.dbdeploy.scripts.DirectoryScanner;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
 
 public class DbDeploy {
 	private String url;

@@ -1,13 +1,12 @@
 package com.dbdeploy;
 
 import com.dbdeploy.scripts.ChangeScript;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.dbdeploy.PrettyPrinter;
+import static org.junit.Assert.*;
 
 public class PrettyPrinterTest {
 	PrettyPrinter prettyPrinter = new PrettyPrinter();

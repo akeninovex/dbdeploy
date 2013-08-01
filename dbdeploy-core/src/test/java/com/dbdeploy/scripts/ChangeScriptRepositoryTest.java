@@ -1,14 +1,13 @@
 package com.dbdeploy.scripts;
 
 import com.dbdeploy.exceptions.DuplicateChangeScriptException;
-import com.dbdeploy.scripts.ChangeScript;
-import com.dbdeploy.scripts.ChangeScriptRepository;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class ChangeScriptRepositoryTest {
 

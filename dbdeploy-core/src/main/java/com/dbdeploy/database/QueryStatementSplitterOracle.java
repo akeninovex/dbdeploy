@@ -1,12 +1,12 @@
 package com.dbdeploy.database;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrMatcher;
 import org.apache.commons.lang.text.StrTokenizer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Adapted class that a) removes the "/" buffer executor (not needed when commands are executed via JDBC) and b) ignores

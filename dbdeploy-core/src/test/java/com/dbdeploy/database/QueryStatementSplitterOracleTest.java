@@ -1,16 +1,23 @@
 package com.dbdeploy.database;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Date;
+import java.util.List;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
 public class QueryStatementSplitterOracleTest {
 	private QueryStatementSplitter oraSplitter;
+
+	public static final long ONE_DAY_IN_MS = 86400000L;
+
+	public static long getTimeOfTheDayInMs() {
+		return System.currentTimeMillis() % ONE_DAY_IN_MS;
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -24,6 +31,12 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(result, hasItem("select 0 from dual"));
 		assertThat(result, hasItem("begin select 1 from dual; begin select 2 from dual; end; end;"));
 		assertThat(result.size(), is(2));
+
+		System.out.println(new Date(System.currentTimeMillis()));
+		System.out.println(new Date(getTimeOfTheDayInMs()));
+
+		System.out.println(new Date(System.currentTimeMillis()));
+		System.out.println(new Date(getTimeOfTheDayInMs()));
 	}
 
 	@Test
@@ -102,6 +115,7 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(3));
 	}
+
 	@Test
 	public void oracleFunctionWithTypesAndGrants() throws Exception {
 		List<String> result = oraSplitter
@@ -204,6 +218,55 @@ public class QueryStatementSplitterOracleTest {
 	}
 
 	@Test
+	public void oracleMaterializedView() throws Exception {
+		List<String> result = oraSplitter
+				.split("CREATE materialized view blahblah1 refresh complete as select 1 from dual;");
+
+		assertThat(result, hasItem("CREATE materialized view blahblah1 refresh complete as select 1 from dual"));
+
+		assertThat(result.size(), is(1));
+	}
+
+	@Test
+	public void oracleMaterializedViewsPlus() throws Exception {
+		List<String> result = oraSplitter
+				.split("CREATE materialized view blahblah1 refresh complete as select 1 from dual;CREATE materialized view blahblah2 refresh complete as select 2 from dual;CREATE FUNCTION as v_long varchar2(4000);BEGIN select 1 from dual;BEGIN select 2 from dual;END;END;");
+
+		assertThat(result, hasItem("CREATE materialized view blahblah1 refresh complete as select 1 from dual"));
+		assertThat(result, hasItem("CREATE materialized view blahblah2 refresh complete as select 2 from dual"));
+		assertThat(
+				result,
+				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END;"));
+
+		assertThat(result.size(), is(3));
+	}
+
+	@Test
+	public void oracleMaterializedViewsPlusReverse() throws Exception {
+		List<String> result = oraSplitter
+				.split("CREATE FUNCTION as v_long varchar2(4000);BEGIN select 1 from dual;BEGIN select 2 from dual;END;END;CREATE materialized view blahblah1 refresh complete as select 1 from dual;CREATE materialized view blahblah2 refresh complete as select 2 from dual;");
+
+		assertThat(result, hasItem("CREATE materialized view blahblah1 refresh complete as select 1 from dual"));
+		assertThat(result, hasItem("CREATE materialized view blahblah2 refresh complete as select 2 from dual"));
+		assertThat(
+				result,
+				hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; BEGIN select 2 from dual; END; END;"));
+
+		assertThat(result.size(), is(3));
+	}
+
+	@Test
+	public void oracleMaterializedViews() throws Exception {
+		List<String> result = oraSplitter
+				.split("CREATE materialized view blahblah1 refresh complete as select 1 from dual;CREATE materialized view blahblah2 refresh complete as select 2 from dual;");
+
+		assertThat(result, hasItem("CREATE materialized view blahblah1 refresh complete as select 1 from dual"));
+		assertThat(result, hasItem("CREATE materialized view blahblah2 refresh complete as select 2 from dual"));
+
+		assertThat(result.size(), is(2));
+	}
+
+	@Test
 	public void oracleTableAs() throws Exception {
 		List<String> result = oraSplitter
 				.split("create table x as select 1 from dual;create view blahblah1 as select 1 from dual;");
@@ -224,7 +287,7 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(2));
 	}
-	
+
 	@Test
 	public void oracleGrant() throws Exception {
 		List<String> result = oraSplitter.split("grant all on x to y;grant all on y to x;");

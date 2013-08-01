@@ -8,7 +8,6 @@ import com.dbdeploy.exceptions.SchemaVersionTrackingException;
 import com.dbdeploy.scripts.ChangeScript;
 import com.dbdeploy.scripts.ChangeScriptRepository;
 import com.dbdeploy.scripts.StubChangeScript;
-
 import org.junit.Test;
 
 import java.io.*;

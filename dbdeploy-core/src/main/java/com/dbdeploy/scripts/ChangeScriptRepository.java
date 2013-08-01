@@ -1,7 +1,7 @@
 package com.dbdeploy.scripts;
 
-import com.dbdeploy.exceptions.DuplicateChangeScriptException;
 import com.dbdeploy.AvailableChangeScriptsProvider;
+import com.dbdeploy.exceptions.DuplicateChangeScriptException;
 
 import java.util.Collections;
 import java.util.List;

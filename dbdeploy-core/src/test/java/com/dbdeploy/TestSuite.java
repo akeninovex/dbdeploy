@@ -1,9 +1,5 @@
 package com.dbdeploy;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
 import com.dbdeploy.appliers.DirectToDbApplierTest;
 import com.dbdeploy.appliers.TemplateBasedApplierTest;
 import com.dbdeploy.database.QueryStatementSplitterOracleTest;
@@ -15,6 +11,9 @@ import com.dbdeploy.scripts.ChangeScriptCreatorTest;
 import com.dbdeploy.scripts.ChangeScriptRepositoryTest;
 import com.dbdeploy.scripts.ChangeScriptTest;
 import com.dbdeploy.scripts.FilenameParserTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(value = Suite.class)
 @SuiteClasses(value = { PrettyPrinterTest.class, ControllerTest.class, DbDeployTest.class, ChangeScriptTest.class,
