@@ -5,7 +5,7 @@ import java.util.EnumSet;
 /**
  * Enumeration listing used/relevant DDL elements together with a property {@link #encapsulatesPlSqlBlock(String)}
  * indicating if the DDL statement uses PL/SQL block syntax (i.e. code blocks ending with "END;" instead of a simple
- * ";". The default object ({@link #OTHER}) assumes PL/SLQ block usage.
+ * ";". The default element ({@link #OTHER}) assumes PL/SLQ block usage.
  * 
  * @author akenworthy
  * 
