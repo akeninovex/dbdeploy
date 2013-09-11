@@ -297,4 +297,62 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(2));
 	}
+	
+	@Test
+	public void oracleSlashAsDivisor() throws Exception {
+		List<String> result = oraSplitter.split("select 1 as a from dual;select 1/2 as b from dual;select 1 / 2 as c from dual;");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+		assertThat(result, hasItem("select 1/2 as b from dual"));
+		assertThat(result, hasItem("select 1 / 2 as c from dual"));
+
+		assertThat(result.size(), is(3));
+	}
+	
+	@Test
+	public void oracleSlashAsText() throws Exception {
+		List<String> result = oraSplitter.split("select 1 as a from dual;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+		assertThat(result, hasItem("select to_date('31//12//1999','dd//mm//yyyy') from dual"));
+
+		assertThat(result.size(), is(2));
+	}
+	
+	@Test
+	public void oracleSlashAsBuffer() throws Exception {
+		List<String> result = oraSplitter.split("select 1 as a from dual\n/;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+		assertThat(result, hasItem("select to_date('31//12//1999','dd//mm//yyyy') from dual"));
+
+		assertThat(result.size(), is(2));
+	}
+	
+	@Test
+	public void oracleSlashAsSingleBuffer() throws Exception {
+		List<String> result = oraSplitter.split("select 1 as a from dual;\n/");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleSlashAsOrphanedBuffer1() throws Exception {
+		List<String> result = oraSplitter.split("\n;/\nselect 1 as a from dual;");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleSlashAsOrphanedBuffer2() throws Exception {
+		List<String> result = oraSplitter.split("/" + System.lineSeparator() + "select 1 as a from dual;");
+
+		assertThat(result, hasItem("select 1 as a from dual"));
+
+		assertThat(result.size(), is(1));
+	}
 }

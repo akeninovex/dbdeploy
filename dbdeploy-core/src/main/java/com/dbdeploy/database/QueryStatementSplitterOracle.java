@@ -44,10 +44,12 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 
 		for (String l : ll) {
 			String st = l.replaceAll(DELIMITER_PLACEHOLDER, delimiter).trim();
-			if (StringUtils.isNotBlank(st)) {
+			if (StringUtils.isNotBlank(st) && st.lastIndexOf(delimiter) > -1) {
 				st = st.substring(0, st.lastIndexOf(delimiter));
-				statements.add(st);
-				System.out.println("Statement: " + st);
+				if (StringUtils.isNotBlank(st)) {
+					statements.add(st);
+					System.out.println("Statement: " + st);	
+				}
 			}
 		}
 		return statements;
@@ -124,8 +126,18 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	}
 
 	private String[] getCleanedTokenArray(String input) {
+		/*
+		 * remove buffer character, but only when it is preceded or followed by a line break or colon
+		 * (this distinguishes between "/" characters used in text (i.e. dates) or as divisors)
+		 */
+		input = input.replaceAll(BUFFER_EXEC + System.lineSeparator(), "");
+		input = input.replaceAll(System.lineSeparator() + BUFFER_EXEC, "");
+		input = input.replaceAll(BUFFER_EXEC + delimiter, delimiter);
+		input = input.replaceAll(delimiter + BUFFER_EXEC, delimiter);
+		/*
+		 * replace specified command delimiters, as these will be supplied per parsed command
+		 */
 		input = input.replaceAll(delimiter, " " + DELIMITER_PLACEHOLDER + " ");
-		input = input.replaceAll(BUFFER_EXEC, "");
 		/*
 		 * split on (and thereby remove all) whitespace
 		 */
@@ -156,12 +168,12 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private String removeComments(String input) {
 		StringBuilder sb = new StringBuilder();
 		StrTokenizer lineTokenizer = new StrTokenizer(input);
-		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher("\r\n"));
+		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher(System.lineSeparator()));
 
 		for (String line : lineTokenizer.getTokenArray()) {
 			String strippedLine = StringUtils.stripEnd(line, null);
 			if (!strippedLine.trim().startsWith(DASHES) && !strippedLine.trim().startsWith(REM)) {
-				sb.append(strippedLine + " ");
+				sb.append(strippedLine + System.lineSeparator());
 			}
 		}
 		return sb.toString();
