@@ -349,7 +349,7 @@ public class QueryStatementSplitterOracleTest {
 	
 	@Test
 	public void oracleSlashAsOrphanedBuffer2() throws Exception {
-		List<String> result = oraSplitter.split("/" + System.lineSeparator() + "select 1 as a from dual;");
+		List<String> result = oraSplitter.split("/" + System.getProperty("line.separator") + "select 1 as a from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
 

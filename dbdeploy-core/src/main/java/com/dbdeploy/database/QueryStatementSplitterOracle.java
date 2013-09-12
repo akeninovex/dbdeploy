@@ -30,6 +30,8 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private final static String DELIMITER_PLACEHOLDER = "_DELIMITER_PH_";
 	private final static String CMD_BREAK_PLACEHOLDER = "_CMD_BREAK_PH_";
 	private final static String BLOCK_END_WITH_DELIMITER_PH = BLOCK_END + DELIMITER_PLACEHOLDER;
+	
+	private final static String SEP = System.getProperty("line.separator");
 
 	public List<String> split(String input) {
 		System.out.println("Splitter is utilising subclass: " + this.getClass().getSimpleName());
@@ -130,8 +132,8 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		 * remove buffer character, but only when it is preceded or followed by a line break or colon
 		 * (this distinguishes between "/" characters used in text (i.e. dates) or as divisors)
 		 */
-		input = input.replaceAll(BUFFER_EXEC + System.lineSeparator(), "");
-		input = input.replaceAll(System.lineSeparator() + BUFFER_EXEC, "");
+		input = input.replaceAll(BUFFER_EXEC + SEP, "");
+		input = input.replaceAll(SEP + BUFFER_EXEC, "");
 		input = input.replaceAll(BUFFER_EXEC + delimiter, delimiter);
 		input = input.replaceAll(delimiter + BUFFER_EXEC, delimiter);
 		/*
@@ -168,12 +170,12 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private String removeComments(String input) {
 		StringBuilder sb = new StringBuilder();
 		StrTokenizer lineTokenizer = new StrTokenizer(input);
-		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher(System.lineSeparator()));
+		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher(SEP));
 
 		for (String line : lineTokenizer.getTokenArray()) {
 			String strippedLine = StringUtils.stripEnd(line, null);
 			if (!strippedLine.trim().startsWith(DASHES) && !strippedLine.trim().startsWith(REM)) {
-				sb.append(strippedLine + System.lineSeparator());
+				sb.append(strippedLine + SEP);
 			}
 		}
 		return sb.toString();
