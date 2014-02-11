@@ -23,6 +23,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private final static String BLOCK_BEGIN = "BEGIN";
 	private final static String CREATE_BEGIN = "CREATE";
 	private final static String GRANT_BEGIN = "GRANT";
+	private final static String CASE_BEGIN = "CASE";
 	private final static String DEFINITION_BEGIN = "AS";
 	private final static String BLOCK_END = "END";
 	private final static String BUFFER_EXEC = "/";
@@ -78,8 +79,12 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 			} else if (GRANT_BEGIN.equalsIgnoreCase(s)) {
 				openStatement++;
 				isSimpleSqlBlock = true;
+			} else if (CASE_BEGIN.equalsIgnoreCase(s)) {
+				openBlocks++;
 			} else if (BLOCK_BEGIN.equalsIgnoreCase(s)) {
 				openBlocks++;
+			} else if (BLOCK_END.equalsIgnoreCase(s)) {
+				openBlocks--;
 			} else if (DEFINITION_BEGIN.equalsIgnoreCase(s)) {
 				definitionStarted = true;
 			} else {

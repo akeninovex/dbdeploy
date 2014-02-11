@@ -361,7 +361,6 @@ public class QueryStatementSplitterOracleTest {
 		List<String> result = oraSplitter.split("select 1 as a from dual;\n/");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
-
 		assertThat(result.size(), is(1));
 	}
 
@@ -370,7 +369,6 @@ public class QueryStatementSplitterOracleTest {
 		List<String> result = oraSplitter.split("\n;/\nselect 1 as a from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
-
 		assertThat(result.size(), is(1));
 	}
 
@@ -380,7 +378,31 @@ public class QueryStatementSplitterOracleTest {
 				.split("/" + System.getProperty("line.separator") + "select 1 as a from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleCase() throws Exception {
+		List<String> result = oraSplitter
+				.split("/" + System.getProperty("line.separator") + "select case when 1=2 then 0 else 1 end as a from dual;");
 
+		assertThat(result, hasItem("select case when 1=2 then 0 else 1 end as a from dual"));
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleCaseInFunction1() throws Exception {
+		List<String> result = oraSplitter
+				.split("CREATE FUNCTION as v_long varchar2(4000); BEGIN\nselect case when 1=2 then 0 else 1 end as a from dual;\nEND;");
+		assertThat(result, hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select case when 1=2 then 0 else 1 end as a from dual; END;"));
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleCaseInFunction2() throws Exception {
+		List<String> result = oraSplitter
+				.split("create function return integer as begin return case when 1=2 then 0 else 1 end;end;");
+		assertThat(result, hasItem("create function return integer as begin return case when 1=2 then 0 else 1 end; end;"));
 		assertThat(result.size(), is(1));
 	}
 }
