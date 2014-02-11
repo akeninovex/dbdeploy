@@ -65,7 +65,7 @@ public class Controller {
 			 */
 			Collections.sort(applied);
 
-			if (script.getId() > applied.get(applied.size() - 1)) {
+			if (applied.size() == 0 || script.getId() > applied.get(applied.size() - 1)) {
 				result.add(script);
 			}
 		}
