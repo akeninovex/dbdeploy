@@ -1,12 +1,12 @@
 package com.dbdeploy;
 
-import com.dbdeploy.exceptions.DbDeployException;
-import com.dbdeploy.scripts.ChangeScript;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.dbdeploy.exceptions.DbDeployException;
+import com.dbdeploy.scripts.ChangeScript;
 
 public class Controller {
 
@@ -18,8 +18,8 @@ public class Controller {
 	private final PrettyPrinter prettyPrinter = new PrettyPrinter();
 
 	public Controller(AvailableChangeScriptsProvider availableChangeScriptsProvider,
-					  AppliedChangesProvider appliedChangesProvider,
-					  ChangeScriptApplier changeScriptApplier, ChangeScriptApplier undoScriptApplier) {
+			AppliedChangesProvider appliedChangesProvider, ChangeScriptApplier changeScriptApplier,
+			ChangeScriptApplier undoScriptApplier) {
 		this.availableChangeScriptsProvider = availableChangeScriptsProvider;
 		this.appliedChangesProvider = appliedChangesProvider;
 		this.changeScriptApplier = changeScriptApplier;
@@ -37,29 +37,35 @@ public class Controller {
 
 		logStatus(scripts, applied, toApply);
 
-        changeScriptApplier.apply(Collections.unmodifiableList(toApply));
+		changeScriptApplier.apply(Collections.unmodifiableList(toApply));
 
-        if (undoScriptApplier != null) {
+		if (undoScriptApplier != null) {
 			info("Generating undo scripts...");
 			Collections.reverse(toApply);
-            undoScriptApplier.apply(Collections.unmodifiableList(toApply));
-        }
+			undoScriptApplier.apply(Collections.unmodifiableList(toApply));
+		}
 	}
 
-    private void logStatus(List<ChangeScript> scripts, List<Long> applied, List<ChangeScript> toApply) {
+	private void logStatus(List<ChangeScript> scripts, List<Long> applied, List<ChangeScript> toApply) {
 		info("Changes currently applied to database:\n  " + prettyPrinter.format(applied));
 		info("Scripts available:\n  " + prettyPrinter.formatChangeScriptList(scripts));
 		info("To be applied:\n  " + prettyPrinter.formatChangeScriptList(toApply));
 	}
 
-	private List<ChangeScript> identifyChangesToApply(Long lastChangeToApply, List<ChangeScript> scripts, List<Long> applied) {
+	private List<ChangeScript> identifyChangesToApply(Long lastChangeToApply, List<ChangeScript> scripts,
+			List<Long> applied) {
 		List<ChangeScript> result = new ArrayList<ChangeScript>();
 
 		for (ChangeScript script : scripts) {
-			if (script.getId() > lastChangeToApply)
+			if (script.getId() > lastChangeToApply) {
 				break;
+			}
+			/*
+			 * don't allow gaps to be "filled"
+			 */
+			Collections.sort(applied);
 
-			if (!applied.contains(script.getId())) {
+			if (script.getId() > applied.get(applied.size() - 1)) {
 				result.add(script);
 			}
 		}
