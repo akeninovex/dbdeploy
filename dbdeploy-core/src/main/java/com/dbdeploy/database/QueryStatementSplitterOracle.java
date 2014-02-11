@@ -1,12 +1,12 @@
 package com.dbdeploy.database;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrMatcher;
-import org.apache.commons.lang.text.StrTokenizer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrMatcher;
+import org.apache.commons.lang.text.StrTokenizer;
 
 /**
  * Adapted class that a) removes the "/" buffer executor (not needed when commands are executed via JDBC) and b) ignores
@@ -30,12 +30,16 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private final static String DELIMITER_PLACEHOLDER = "_DELIMITER_PH_";
 	private final static String CMD_BREAK_PLACEHOLDER = "_CMD_BREAK_PH_";
 	private final static String BLOCK_END_WITH_DELIMITER_PH = BLOCK_END + DELIMITER_PLACEHOLDER;
-	
+
 	private final static String SEP = System.getProperty("line.separator");
 
 	public List<String> split(String input) {
 		System.out.println("Splitter is utilising subclass: " + this.getClass().getSimpleName());
 
+		/*
+		 * remove all comments
+		 */
+		input = removeBlockComments(input);
 		input = removeComments(input);
 
 		String[] ss = getCleanedTokenArray(input);
@@ -50,7 +54,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 				st = st.substring(0, st.lastIndexOf(delimiter));
 				if (StringUtils.isNotBlank(st)) {
 					statements.add(st);
-					System.out.println("Statement: " + st);	
+					System.out.println("Statement: " + st);
 				}
 			}
 		}
@@ -129,8 +133,8 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 
 	private String[] getCleanedTokenArray(String input) {
 		/*
-		 * remove buffer character, but only when it is preceded or followed by a line break or colon
-		 * (this distinguishes between "/" characters used in text (i.e. dates) or as divisors)
+		 * remove buffer character, but only when it is preceded or followed by a line break or colon (this
+		 * distinguishes between "/" characters used in text (i.e. dates) or as divisors)
 		 */
 		input = input.replaceAll(BUFFER_EXEC + SEP, "");
 		input = input.replaceAll(SEP + BUFFER_EXEC, "");
@@ -140,6 +144,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		 * replace specified command delimiters, as these will be supplied per parsed command
 		 */
 		input = input.replaceAll(delimiter, " " + DELIMITER_PLACEHOLDER + " ");
+
 		/*
 		 * split on (and thereby remove all) whitespace
 		 */
@@ -153,6 +158,10 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		 */
 		ss = removeBlanks(ss);
 		return ss;
+	}
+
+	private String removeBlockComments(String input) {
+		return input.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)", "");
 	}
 
 	private void joinTokens(String[] ss) {

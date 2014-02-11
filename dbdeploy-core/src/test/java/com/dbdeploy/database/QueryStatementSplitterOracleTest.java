@@ -1,14 +1,14 @@
 package com.dbdeploy.database;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 public class QueryStatementSplitterOracleTest {
 	private QueryStatementSplitter oraSplitter;
@@ -49,6 +49,30 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleIgnoreComments() throws Exception {
 		List<String> result = oraSplitter.split("-- here is my comment \n create sequence x.y\n;");
+		assertThat(result, hasItem("create sequence x.y"));
+		assertThat(result.size(), is(1));
+	}
+
+	@Test
+	public void oracleIgnoreCommentsBlock() throws Exception {
+		List<String> result = oraSplitter.split("/* here is my comment */\n create sequence x.y\n;");
+		assertThat(result, hasItem("create sequence x.y"));
+		assertThat(result.size(), is(1));
+	}
+
+	@Test
+	public void oracleIgnoreCommentsBlockOverLines() throws Exception {
+		List<String> result = oraSplitter
+				.split("/* here is my \n comment over multiple \n lines*/\n create sequence x.y\n;");
+		assertThat(result, hasItem("create sequence x.y"));
+		assertThat(result.size(), is(1));
+	}
+
+	@Test
+	public void oracleIgnoreCommentsBlocksOverLines() throws Exception {
+		List<String> result = oraSplitter.split("/* here is my \n comment over multiple \n lines*/\n create "
+				+ "/* here is another \n comment over multiple \n lines right in the middle of a command*/"
+				+ "sequence x.y\n;");
 		assertThat(result, hasItem("create sequence x.y"));
 		assertThat(result.size(), is(1));
 	}
@@ -297,10 +321,11 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(2));
 	}
-	
+
 	@Test
 	public void oracleSlashAsDivisor() throws Exception {
-		List<String> result = oraSplitter.split("select 1 as a from dual;select 1/2 as b from dual;select 1 / 2 as c from dual;");
+		List<String> result = oraSplitter
+				.split("select 1 as a from dual;select 1/2 as b from dual;select 1 / 2 as c from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
 		assertThat(result, hasItem("select 1/2 as b from dual"));
@@ -308,27 +333,29 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(3));
 	}
-	
+
 	@Test
 	public void oracleSlashAsText() throws Exception {
-		List<String> result = oraSplitter.split("select 1 as a from dual;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
+		List<String> result = oraSplitter
+				.split("select 1 as a from dual;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
 		assertThat(result, hasItem("select to_date('31//12//1999','dd//mm//yyyy') from dual"));
 
 		assertThat(result.size(), is(2));
 	}
-	
+
 	@Test
 	public void oracleSlashAsBuffer() throws Exception {
-		List<String> result = oraSplitter.split("select 1 as a from dual\n/;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
+		List<String> result = oraSplitter
+				.split("select 1 as a from dual\n/;select to_date('31//12//1999','dd//mm//yyyy') from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
 		assertThat(result, hasItem("select to_date('31//12//1999','dd//mm//yyyy') from dual"));
 
 		assertThat(result.size(), is(2));
 	}
-	
+
 	@Test
 	public void oracleSlashAsSingleBuffer() throws Exception {
 		List<String> result = oraSplitter.split("select 1 as a from dual;\n/");
@@ -337,7 +364,7 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(1));
 	}
-	
+
 	@Test
 	public void oracleSlashAsOrphanedBuffer1() throws Exception {
 		List<String> result = oraSplitter.split("\n;/\nselect 1 as a from dual;");
@@ -346,10 +373,11 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(1));
 	}
-	
+
 	@Test
 	public void oracleSlashAsOrphanedBuffer2() throws Exception {
-		List<String> result = oraSplitter.split("/" + System.getProperty("line.separator") + "select 1 as a from dual;");
+		List<String> result = oraSplitter
+				.split("/" + System.getProperty("line.separator") + "select 1 as a from dual;");
 
 		assertThat(result, hasItem("select 1 as a from dual"));
 
