@@ -172,7 +172,6 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	 * @return treated text, with comments removed
 	 */
 	private String removeBlockComments(String input) {
-//		return input.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?:--.*)", "");
 		return input.replaceAll("/\\*(?:.|[\\n\\r])*?\\*/", "");
 	}
 
