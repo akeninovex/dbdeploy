@@ -61,6 +61,13 @@ public class QueryStatementSplitterOracleTest {
 	}
 	
 	@Test
+	public void oracleIgnoreCommentsEndOfLine2() throws Exception {
+		List<String> result = oraSplitter.split("select 1-- here is my comment\n from dual;");
+		assertThat(result, hasItem("select 1 from dual"));
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
 	public void oracleIgnoreCommentsExceptQuoted() throws Exception {
 		List<String> result = oraSplitter.split("select ' quoted hyphens -- ' from dual;");
 		assertThat(result, hasItem("select ' quoted hyphens -- ' from dual"));

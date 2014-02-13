@@ -41,6 +41,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		 * remove all comments
 		 */
 		input = removeBlockComments(input);
+		input = removeLineEndComments(input);
 		input = removeWholeLineComments(input);
 
 		String[] ss = getCleanedTokenArray(input);
@@ -166,13 +167,46 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	}
 
 	/**
-	 * Matches everything between "slash*" and "*slash".
+	 * Matches everything between "slash*" and "*slash". N.B. does not consider if block comments are quoted or not
+	 * (this will be treated as a comment border by oracle anyway).
 	 * 
-	 * @param input text from which to remove comment elements
-	 * @return treated text, with comments removed
+	 * @param input
+	 *            text from which to remove comment elements
+	 * @return treated text, with comment blocks removed
 	 */
 	private String removeBlockComments(String input) {
 		return input.replaceAll("/\\*(?:.|[\\n\\r])*?\\*/", "");
+	}
+
+	/**
+	 * Ignores comments that occur at the end of a line of code: check is made to ensure that a comment (prefixed by
+	 * {@link QueryStatementSplitterOracle#DASHES}) is not part of an open quote.
+	 * 
+	 * @param input
+	 *            text to inspect
+	 * @return text with end-of-line comments removed
+	 */
+	private String removeLineEndComments(String input) {
+		StringBuilder sb = new StringBuilder();
+		StrTokenizer lineTokenizer = new StrTokenizer(input);
+		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher(SEP));
+
+		for (String line : lineTokenizer.getTokenArray()) {
+			String strippedLine = StringUtils.stripEnd(line, null);
+			int commentStarts = strippedLine.indexOf(DASHES);
+			if (commentStarts > -1) {
+				String preComment = strippedLine.substring(0, commentStarts);
+				int quoteCount = preComment.length() - preComment.replace("'", "").length();
+				if (quoteCount % 2 == 0) {
+					/*
+					 * comments not part of non-closed quote
+					 */
+					strippedLine = preComment;
+				}
+			}
+			sb.append(strippedLine + SEP);
+		}
+		return sb.toString();
 	}
 
 	private void joinTokens(String[] ss) {
