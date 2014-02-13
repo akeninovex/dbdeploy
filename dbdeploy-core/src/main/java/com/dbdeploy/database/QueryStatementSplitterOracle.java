@@ -41,7 +41,7 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		 * remove all comments
 		 */
 		input = removeBlockComments(input);
-		input = removeComments(input);
+		input = removeWholeLineComments(input);
 
 		String[] ss = getCleanedTokenArray(input);
 		StringBuilder sb = getStatements(ss);
@@ -165,8 +165,15 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 		return ss;
 	}
 
+	/**
+	 * Matches everything between "slash*" and "*slash".
+	 * 
+	 * @param input text from which to remove comment elements
+	 * @return treated text, with comments removed
+	 */
 	private String removeBlockComments(String input) {
-		return input.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)", "");
+//		return input.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?:--.*)", "");
+		return input.replaceAll("/\\*(?:.|[\\n\\r])*?\\*/", "");
 	}
 
 	private void joinTokens(String[] ss) {
@@ -179,9 +186,9 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	}
 
 	/**
-	 * Ignores commented lines (i.e. lines beginning with "REM" or "--")
+	 * Ignores commented lines (i.e. lines <b>beginning</b> with "REM" or "--")
 	 */
-	private String removeComments(String input) {
+	private String removeWholeLineComments(String input) {
 		StringBuilder sb = new StringBuilder();
 		StrTokenizer lineTokenizer = new StrTokenizer(input);
 		lineTokenizer.setDelimiterMatcher(StrMatcher.charSetMatcher(SEP));

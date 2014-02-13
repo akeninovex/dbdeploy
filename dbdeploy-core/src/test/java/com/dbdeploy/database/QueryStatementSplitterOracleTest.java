@@ -52,6 +52,20 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(result, hasItem("create sequence x.y"));
 		assertThat(result.size(), is(1));
 	}
+	
+	@Test
+	public void oracleIgnoreCommentsEndOfLine() throws Exception {
+		List<String> result = oraSplitter.split("create sequence x.y;-- here is my comment");
+		assertThat(result, hasItem("create sequence x.y"));
+		assertThat(result.size(), is(1));
+	}
+	
+	@Test
+	public void oracleIgnoreCommentsExceptQuoted() throws Exception {
+		List<String> result = oraSplitter.split("select ' quoted hyphens -- ' from dual;");
+		assertThat(result, hasItem("select ' quoted hyphens -- ' from dual"));
+		assertThat(result.size(), is(1));
+	}
 
 	@Test
 	public void oracleIgnoreCommentsBlock() throws Exception {
