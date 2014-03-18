@@ -426,4 +426,22 @@ public class QueryStatementSplitterOracleTest {
 		assertThat(result, hasItem("create function return integer as begin return case when 1=2 then 0 else 1 end; end;"));
 		assertThat(result.size(), is(1));
 	}
+	
+	@Test
+	public void oracleCaseUpdate() throws Exception {
+		List<String> result = oraSplitter
+				.split("/" + System.getProperty("line.separator") + "update x set y = (case when 1=2 then 0 else 1 end);");
+
+		assertThat(result, hasItem("update x set y = (case when 1=2 then 0 else 1 end)"));
+		assertThat(result.size(), is(1));
+	}
+
+    @Test
+    public void oracleDivisorWithGreatest() throws Exception {
+        List<String> result = oraSplitter
+                .split("select (1+2+3)/greatest(case when 1=2 then 1 else 2 end,2) as a from dual;");
+
+        assertThat(result, hasItem("select (1+2+3)/greatest(case when 1=2 then 1 else 2 end,2) as a from dual"));
+        assertThat(result.size(), is(1));
+    }
 }
