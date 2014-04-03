@@ -27,7 +27,8 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 	private final static String DEFINITION_BEGIN = "AS";
 	private final static String BLOCK_END = "END";
 	private final static String BUFFER_EXEC = "/";
-	private String delimiter = super.getDelimiter();
+    private static final String LOOP_BEGIN = "LOOP";
+    private String delimiter = super.getDelimiter();
 	private final static String DELIMITER_PLACEHOLDER = "_DELIMITER_PH_";
 	private final static String CMD_BREAK_PLACEHOLDER = "_CMD_BREAK_PH_";
 	private final static String BLOCK_END_WITH_DELIMITER_PH = BLOCK_END + DELIMITER_PLACEHOLDER;
@@ -80,11 +81,9 @@ public class QueryStatementSplitterOracle extends QueryStatementSplitter {
 			} else if (GRANT_BEGIN.equalsIgnoreCase(s)) {
 				openStatement++;
 				isSimpleSqlBlock = true;
-			} else if (CASE_BEGIN.equalsIgnoreCase(s)) {
+			} else if (SqlELementType.initiatesPlSqlBlock(s)) {
 				openBlocks++;
-			} else if (BLOCK_BEGIN.equalsIgnoreCase(s)) {
-				openBlocks++;
-			} else if (BLOCK_END.equalsIgnoreCase(s)) {
+            } else if (BLOCK_END.equalsIgnoreCase(s)) {
 				openBlocks--;
 			} else if (DEFINITION_BEGIN.equalsIgnoreCase(s)) {
 				definitionStarted = true;

@@ -109,7 +109,7 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleTrigger() throws Exception {
 		List<String> result = oraSplitter.split("create trigger x.y\n BEFORE INSERT ON x.y \nFOR EACH ROW "
-				+ "\nBEGIN\n:new.id := x.y.z;\nEND;");
+				+ "\nBEGIN\n:new.id := x.y.z;\nEND;/");
 		assertThat(result, hasItem("create trigger x.y BEFORE INSERT ON x.y FOR EACH ROW "
 				+ "BEGIN :new.id := x.y.z; END;"));
 
@@ -127,7 +127,7 @@ public class QueryStatementSplitterOracleTest {
 	@Test
 	public void oracleFunction() throws Exception {
 		List<String> result = oraSplitter
-				.split("CREATE FUNCTION as v_long varchar2(4000); BEGIN\nselect 1 from dual;\nEND;");
+				.split("CREATE FUNCTION as v_long varchar2(4000); BEGIN\nselect 1 from dual;\nEND;/");
 		assertThat(result, hasItem("CREATE FUNCTION as v_long varchar2(4000); BEGIN select 1 from dual; END;"));
 
 		assertThat(result.size(), is(1));
@@ -143,6 +143,18 @@ public class QueryStatementSplitterOracleTest {
 
 		assertThat(result.size(), is(1));
 	}
+
+    @Test
+    public void oracleFunctionNestedLoops() throws Exception {
+        List<String> result = oraSplitter
+                .split("create function x.y(p in varchar2) return z as begin loop loop\n" +
+                        "end loop; end loop; return x; end;");
+        assertThat(
+                result,
+                hasItem("create function x.y(p in varchar2) return z as begin loop loop end loop; end loop; return x; end;"));
+
+        assertThat(result.size(), is(1));
+    }
 
 	@Test
 	public void oracleFunctionWithTypes() throws Exception {
